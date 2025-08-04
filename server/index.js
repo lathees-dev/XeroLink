@@ -3,7 +3,14 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
 
+import path from "path";
+import { fileURLToPath } from "url";
+
 import authRoutes from './routes/authRoutes.js'
+import orderRoutes from './routes/orderRoutes.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 const app = express();
@@ -11,8 +18,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 app.get('/', (req, res) => res.send("XeroLink API running!"));
 app.use('/api/auth', authRoutes);
+app.use('/api/orders', orderRoutes);
 
 mongoose.connect(process.env.MONGO_URI)
     .then(() => app.listen(5000, () => console.log("Server running on port 5000")))
