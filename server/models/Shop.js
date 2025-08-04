@@ -7,6 +7,7 @@ const shopSchema = new mongoose.Schema({
     location: { type: String, required: true },
     isOpen: { type: Boolean, default: true },
     phone: { type: String, required: true },
+    role: { type: String, enum: ['shop'], default: 'shop' },
 })
 
 export default mongoose.model("Shop", shopSchema);
