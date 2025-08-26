@@ -23,6 +23,9 @@ export const addOrderToQueue = async (req, res) => {
 
 export const getShopQueue = async (req, res) => {
     try {
+        if (req.user.role !== "shop" || req.user.id !== req.params.shopId) {
+            return res.status(403).json({error: "Forbidden: Insufficient permissions"})
+        }
         const { shopId } = req.params;
         const queue = await Queue.find({ shopId }).populate("orderId");
         res.json(queue);

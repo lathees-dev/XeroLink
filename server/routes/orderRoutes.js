@@ -1,15 +1,17 @@
 import express from "express";
-import upload from "../config/multer.js";
+import protect from "./../middlewares/protect.js";
+import authorizeRole from "../middlewares/authorizeRole.js";
 import {
   createOrder,
   getUserOrders,
   deleteOrder,
 } from "../controllers/orderController.js";
+import upload from "../config/multer.js";
 
 const router = express.Router();
 
-router.post("/create", upload.single("document"), createOrder);
-router.get("/", getUserOrders);
-router.delete("/:id", deleteOrder);
+router.post("/create", protect, authorizeRole(["student"]), upload.single("document"), createOrder);
+router.get("/", protect, authorizeRole(["student"]), getUserOrders);
+router.delete("/:id", protect, authorizeRole(["student"]), deleteOrder);
 
 export default router;
