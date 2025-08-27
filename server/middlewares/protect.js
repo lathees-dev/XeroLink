@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import Student from "../models/User.js";
 import Shop from "../models/Shop.js";
+import AppError from "../utils/AppError.js";
 
 const protect = async (req, res, next) => {
   let token;
@@ -22,18 +23,16 @@ const protect = async (req, res, next) => {
       }
 
       if (!user) {
-        return res
-          .status(401)
-          .json({ message: "Not authorized, user not found" });
+        return next(new AppError("Not authorized, user not found", 401));
       }
       req.user = user;
       next();
     } catch (error) {
       console.error(error);
-      res.status(401).json({ message: "Not authorized, token failed" });
+      return next(new AppError("Not authorized, token failed", 401));
     }
   } else {
-    res.status(401).json({ message: "Not authorized, no token" });
+    return next(new AppError("Not authorized, no token", 401));
   }
 };
 

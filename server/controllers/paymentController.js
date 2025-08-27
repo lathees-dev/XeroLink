@@ -1,7 +1,7 @@
 import Payment from "../models/Payment.js";
 import Order from "../models/Order.js";
-
-export const createPayment = async (req, res) => {
+import AppError from "../utils/AppError.js";
+export const createPayment = async (req, res, next) => {
   try {
     const { orderId, userId, amount, method, transactionId } = req.body;
     // Validate order exists
@@ -19,21 +19,21 @@ export const createPayment = async (req, res) => {
 
     res.status(201).json({ success: true, payment });
   } catch (err) {
-    res.status(500).json({ error: "Failed to create payment" });
+    next(err);
   }
 };
 
-export const getOrderPayments = async (req, res) => {
+export const getOrderPayments = async (req, res, next) => {
   try {
     const { orderId } = req.params;
     const payments = await Payment.find({ orderId });
     res.json(payments);
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch payments" });
+    next(err);
   }
 };
 
-export const updatePaymentStatus = async (req, res) => {
+export const updatePaymentStatus = async (req, res, next) => {
   try {
     const { paymentId } = req.params;
     const { status } = req.body;
@@ -42,9 +42,9 @@ export const updatePaymentStatus = async (req, res) => {
       { status },
       { new: true }
     );
-    if (!payment) return res.status(404).json({ error: "Payment not found" });
-    res.json(payment);
+    if (!payment) return next(new AppError("Payment not found", 404));
+    res.json({ success: true, payment });
   } catch (err) {
-    res.status(500).json({ error: "Failed to update payment status" });
+    next(err);
   }
 };
