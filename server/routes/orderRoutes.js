@@ -19,8 +19,8 @@ router.post("/create", protect, authorizeRole(["student"]), upload.single("docum
 router.post("/:orderId/feedback", protect, authorizeRole(["student"]), leaveOrderFeedback);
 router.get("/", protect, authorizeRole(["student"]), getUserOrders);
 router.get("/:orderId", protect, authorizeRole(["student"]), getOrderDetails);
-router.patch("/:orderId/status", protect, authorizeRole(["student"]), updateOrderStatus);
-router.delete("/:orderId", protect, authorizeRole(["student"]), cancelOrder);
+router.patch("/:orderId/status", protect, authorizeRole(["shop"]), updateOrderStatus);
+router.delete("/:orderId", protect, authorizeRole(["student","shop"]), cancelOrder);
 router.delete("/:id", protect, authorizeRole(["student"]), deleteOrder);
 
 export default router;
