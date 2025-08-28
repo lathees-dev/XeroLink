@@ -7,6 +7,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 import authRoutes from './routes/authRoutes.js'
+import shopRoutes from './routes/shopRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import queueRoutes from './routes/queueRoutes.js';
@@ -27,6 +28,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/queue', queueRoutes);
+app.use('/app/shop', shopRoutes);
 app.use(errorHandler);
 
 mongoose.connect(process.env.MONGO_URI)
