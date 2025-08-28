@@ -41,8 +41,12 @@ const orderSchema = new mongoose.Schema(
     specialInstructions: { type: String },
     status: {
       type: String,
-      enum: ["pending", "accepted", "printing", "completed", "cancelled"],
-      default: "pending",
+      enum: ["submitted", "queued", "processing", "completed", "cancelled"],
+      default: "submitted",
+    },
+    feedback: {
+      rating: { type: Number, min: 1, max: 5 },
+      comment: { type: String },
     },
   },
   { timestamps: true }

@@ -47,7 +47,7 @@ export const createOrder = async (req, res, next) => {
   }
 };
 
-
+// GET /api/orders/user
 export const getUserOrders = async (req, res, next) => {
   try {
     const orders = await Order.find({ userId: req.user.id }).sort({
@@ -58,6 +58,79 @@ export const getUserOrders = async (req, res, next) => {
     next(err);
   }
 };
+
+export const getOrderDetails = async (req, res, next) => {
+  try {
+    const order = await Order.findById(req.params.orderId);
+    if (!order) {
+      return next(new AppError("Order not found", 404));
+    }
+    res.json({ success: true, order });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// UPDATE /api/orders/:id
+export const updateOrderStatus = async (req, res, next) => {
+  try {
+    const { status } = req.body;
+    const validStatus = ["queued", "processing", "completed", "cancelled"];
+    if (!validStatus.includes(status)) {
+      return next(new AppError("Invalid status value", 400));
+    }
+    const order = await Order.findByIdAndUpdate(
+      req.params.orderId,
+      { status },
+      { new: true }
+    );
+    if (!order) return next(new AppError("Order not found", 404));
+    res.json({ success: true, order });
+  } catch (err) {
+    next(err);
+  }
+};
+
+//Cancel Order (user or shop)
+export const cancelOrder = async (req, res, next) => {
+  try {
+    const order = await Order.findById(req.params.orderId);
+    if (!order) return next(new AppError("Order not found", 404));
+    // Only user who created or shop can cancel
+    if (
+      req.user.role === "student" &&
+      req.user.id !== order.userId.toString() &&
+      req.user.role === "shop" &&
+      req.user.id !== order.shopId.toString()
+    ) {
+      return next(new AppError("Not authorized to cancel this order", 403));
+    }
+    order.status = "cancelled";
+    await order.save();
+    res.json({ success: true, order });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Leave Feedback (user only)
+export const leaveOrderFeedback = async (req, res, next) => {
+  try {
+    const { rating, comment } = req.body;
+    const order = await Order.findById(req.params.orderId);
+    if (!order) return next(new AppError("Order not found", 404));
+    if (req.user.role !== "student" || req.user.id !== order.userId.toString()) {
+      return next(new AppError("Not authorized to leave feedback", 403));
+    }
+    order.feedback = { rating, comment };
+    await order.save();
+    res.json({ success: true, order });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// DELETE /api/orders/:id
 export const deleteOrder = async (req, res, next) => {
   try {
     const order = await Order.findByIdAndDelete(req.params.id);
