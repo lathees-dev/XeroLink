@@ -91,6 +91,24 @@ export const updateOrderStatus = async (req, res, next) => {
   }
 };
 
+
+// Leave Feedback (user only)
+export const leaveOrderFeedback = async (req, res, next) => {
+  try {
+    const { rating, comment } = req.body;
+    const order = await Order.findById(req.params.orderId);
+    if (!order) return next(new AppError("Order not found", 404));
+    if (req.user.role !== "student" || req.user.id !== order.userId.toString()) {
+      return next(new AppError("Not authorized to leave feedback", 403));
+    }
+    order.feedback = { rating, comment };
+    await order.save();
+    res.json({ success: true, order });
+  } catch (err) {
+    next(err);
+  }
+}
+
 //Cancel Order (user or shop)
 export const cancelOrder = async (req, res, next) => {
   try {
@@ -112,23 +130,6 @@ export const cancelOrder = async (req, res, next) => {
     next(err);
   }
 };
-
-// Leave Feedback (user only)
-export const leaveOrderFeedback = async (req, res, next) => {
-  try {
-    const { rating, comment } = req.body;
-    const order = await Order.findById(req.params.orderId);
-    if (!order) return next(new AppError("Order not found", 404));
-    if (req.user.role !== "student" || req.user.id !== order.userId.toString()) {
-      return next(new AppError("Not authorized to leave feedback", 403));
-    }
-    order.feedback = { rating, comment };
-    await order.save();
-    res.json({ success: true, order });
-  } catch (err) {
-    next(err);
-  }
-}
 
 // DELETE /api/orders/:id
 export const deleteOrder = async (req, res, next) => {
