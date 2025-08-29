@@ -4,11 +4,12 @@ import AppError from "../utils/AppError.js";
 // Update shop profile
 export const updateShopProfile = async (req, res, next) => {
   try {
-    const updates = (({ name, address, description, contact }) => ({
+    const updates = (({ name, email,phone, location, description }) => ({
       name,
-      address,
+      email,
+      phone,
+      location,
       description,
-      contact,
     }))(req.body);
     const shop = await Shop.findByIdAndUpdate(req.user.id, updates, {
       new: true,
@@ -23,13 +24,13 @@ export const updateShopProfile = async (req, res, next) => {
 // Update shop status (open/closed)
 export const updateShopStatus = async (req, res, next) => {
   try {
-    const { status } = req.body;
-    if (!["open", "closed"].includes(status)) {
-      return next(new AppError("Invalid status", 400));
+    const { isOpen } = req.body;
+    if (typeof isOpen !== "boolean") {
+      return next(new AppError("Invalid status, must be a boolean", 400));
     }
     const shop = await Shop.findByIdAndUpdate(
       req.user.id,
-      { status },
+      { isOpen },
       { new: true }
     );
     if (!shop) return next(new AppError("Shop not found", 404));
@@ -65,8 +66,8 @@ export const editService = async (req, res, next) => {
     const service = shop.services.id(serviceId);
     if (!service) return next(new AppError("Service not found", 404));
     if (name) service.name = name;
-    if (price) service.price = price;
-    if (description) service.description = description;
+    if (price !== undefined) service.price = price;
+    if (description !== undefined) service.description = description;
     await shop.save();
     res.json({ success: true, service });
   } catch (err) {
@@ -80,9 +81,12 @@ export const removeService = async (req, res, next) => {
     const { serviceId } = req.params;
     const shop = await Shop.findById(req.user.id);
     if (!shop) return next(new AppError("Shop not found", 404));
-    const service = shop.services.id(serviceId);
-    if (!service) return next(new AppError("Service not found", 404));
-    service.remove();
+    // Remove by ID using pull
+    const prevLength = shop.services.length;
+    shop.services.pull(serviceId); // <--- THIS LINE
+    if (shop.services.length === prevLength) {
+      return next(new AppError("Service not found", 404));
+    }
     await shop.save();
     res.json({ success: true, services: shop.services });
   } catch (err) {

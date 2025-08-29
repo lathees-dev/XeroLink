@@ -28,7 +28,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/queue', queueRoutes);
-app.use('/app/shop', shopRoutes);
+app.use('/api/shop', shopRoutes);
 app.use(errorHandler);
 
 mongoose.connect(process.env.MONGO_URI)
