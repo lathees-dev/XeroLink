@@ -1,11 +1,12 @@
 import Order from "../models/Order.js";
 import AppError from "../utils/AppError.js";
 
+// Create new order
 export const createOrder = async (req, res, next) => {
   try {
     const {
-      userId,
       shopId,
+      services,
       copies,
       colorMode,
       doubleSided,
@@ -17,19 +18,23 @@ export const createOrder = async (req, res, next) => {
       specialInstructions,
     } = req.body;
 
-    const documentFile = req.file;
-    if (!documentFile) {
-      return next(new AppError("Document file is required", 400));
-    }
+    // Handle multiple file uploads (if using multer.array)
+    const files = req.files || [];
+    if (!files.length) return next(new AppError("At least one document file is required", 400));
 
-    const documentUrl = `/uploads/${documentFile.filename}`;
-    const documentName = documentFile.originalname;
+    const documentFiles = files.map(file => ({
+      url: `/uploads/${file.filename}`,
+      name: file.originalname,
+    }));
+
+    // Calculate total amount from services
+    const amount = services.reduce((sum, s) => sum + (s.price * (s.quantity || 1)), 0);
 
     const newOrder = await Order.create({
-      userId,
+      userId: req.user.id,
       shopId,
-      documentName,
-      documentUrl,
+      services,
+      documentFiles,
       copies,
       colorMode,
       doubleSided,
@@ -39,6 +44,9 @@ export const createOrder = async (req, res, next) => {
       pageRange,
       outputType,
       specialInstructions,
+      amount,
+      paymentStatus: "pending",
+      status: "submitted",
     });
 
     res.status(201).json({ success: true, order: newOrder });
@@ -58,6 +66,7 @@ export const getUserOrders = async (req, res, next) => {
     next(err);
   }
 };
+
 
 export const getOrderDetails = async (req, res, next) => {
   try {
@@ -90,7 +99,6 @@ export const updateOrderStatus = async (req, res, next) => {
     next(err);
   }
 };
-
 
 // Leave Feedback (user only)
 export const leaveOrderFeedback = async (req, res, next) => {

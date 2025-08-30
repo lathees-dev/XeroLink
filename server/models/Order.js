@@ -1,5 +1,11 @@
 import mongoose from "mongoose";
 
+const serviceItemSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  price: { type: Number, required: true },
+  quantity: { type: Number, default: 1 },
+});
+
 const orderSchema = new mongoose.Schema(
   {
     userId: {
@@ -9,11 +15,16 @@ const orderSchema = new mongoose.Schema(
     },
     shopId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Shop",
       required: true,
     },
-    documentName: { type: String, required: true },
-    documentUrl: { type: String, required: true },
+    services: { type: [serviceItemSchema], required: true },
+    documentFiles: [
+      {
+        url: { type: String, required: true },
+        name: { type: String, required: true },
+      },
+    ],
     copies: { type: Number, default: 1 },
     colorMode: {
       type: String,
@@ -44,6 +55,13 @@ const orderSchema = new mongoose.Schema(
       enum: ["submitted", "queued", "processing", "completed", "cancelled"],
       default: "submitted",
     },
+    paymentStatus: {
+      type: String,
+      enum: ["pending", "paid", "failed"],
+      default: "pending",
+    },
+    transactionId: { type: String },
+    amount: { type: Number },
     feedback: {
       rating: { type: Number, min: 1, max: 5 },
       comment: { type: String },
