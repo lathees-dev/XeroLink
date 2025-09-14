@@ -1,7 +1,6 @@
 import "./globals.css";
-import { ReactNode } from "react";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { queryClient } from "@/lib/queryClient";
+import type { ReactNode } from "react";
+import Providers from "./providers";
 
 export const metadata = {
   title: "XeroLink",
@@ -9,12 +8,11 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
+  // Note: this file remains a Server Component (no "use client" here)
   return (
     <html lang="en">
       <body>
-        <QueryClientProvider client={queryClient}>
-          {children}
-        </QueryClientProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
