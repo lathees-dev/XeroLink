@@ -1,9 +1,11 @@
 import axios from "axios";
-import { API_BASE_URL } from "./endpoints";
+
+// Use Next.js rewrite (proxy) or set NEXT_PUBLIC_API_BASE_URL to http://localhost:5000/api
+const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "/api";
 
 export const api = axios.create({
-  baseURL: API_BASE_URL,
-  withCredentials: true,
+  baseURL,
+  withCredentials: false, // Important: keep false if using Bearer tokens
 });
 
 api.interceptors.request.use((config) => {
